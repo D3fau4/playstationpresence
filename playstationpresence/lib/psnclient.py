@@ -127,7 +127,6 @@ class PSNClient():
         }
 
         url = f'{self._PS_GRAPH_API}?operationName=getPurchasedGameList&variables={json.dumps(variables)}&extensions={json.dumps(extensions)}'
-        print(url)
         response = requests.get(url, headers=headers)
         return json.loads(response.text)
 

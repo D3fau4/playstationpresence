@@ -8,9 +8,16 @@ from playstationpresence.lib.notifiable import Notifiable
 from playstationpresence.lib.rpc_retry import rpc_retry
 from requests.exceptions import *
 from threading import Event
+import json
 
 class PlaystationPresence:
-    def __init__(self):
+    def __init__(self, lenguage = "en"):
+        if (lenguage == "es_ES"):
+            with open('len/es.json') as json_file:
+                self.string = json.load(json_file)
+        else:
+            with open('len/en.json') as json_file:
+                self.string = json.load(json_file)
         self.notifier = None
         self.rpc = None
         self.exit_event = Event()
@@ -47,6 +54,7 @@ class PlaystationPresence:
     @rpc_retry
     def updateStatus(self, state: str, large_image: str, large_text: str, tray_tooltip: str):
         start_time = int(time.time())
+        print(large_text)
         self.rpc.update(state=state, start=start_time, small_image="ps5_main", small_text=self.psnid, large_image=large_image, large_text=large_text)
         self.notify(f"Status changed to {tray_tooltip}")
 
@@ -63,12 +71,12 @@ class PlaystationPresence:
                 self.old_info = { 'onlineStatus': onlineStatus, 'titleId': None }
         elif game_info == None:
             if self.old_info['onlineStatus'] != "online" or self.old_info['titleId'] != None:
-                self.updateStatus("Not in game", "ps5_main", "Homescreen", "Not in game")
+                self.updateStatus(self.string["notplaying"], "ps5_main", self.string["homemenu"], self.string["notplaying"])
                 self.old_info = { 'onlineStatus': onlineStatus, 'titleId': None }
         elif self.old_info['titleId'] != game_info[0]['npTitleId']:
             game: dict[str, str] = game_info[0]
             large_icon = game['npTitleId'].lower() if game['npTitleId'] in self.supported_games else "ps5_main"
-            self.updateStatus(game['titleName'], large_icon, game['titleName'], f"Playing {game['titleName']}")
+            self.updateStatus(game['titleName'], large_icon, game['titleName'],  self.string["playing"] + f" {game['titleName']}")
             self.old_info = { 'onlineStatus': onlineStatus, 'titleId': game['npTitleId'] }
 
     def mainloop(self, notifier: Notifiable):

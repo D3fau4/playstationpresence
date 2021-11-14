@@ -1,5 +1,6 @@
 import argparse
 import os
+import locale
 
 from playstationpresence.playstationpresence import PlaystationPresence
 
@@ -8,7 +9,7 @@ def main():
     parser.add_argument("--no-tray-icon", help="Don't create a tray icon", action="store_true")
     args = parser.parse_args()
 
-    pspresence = PlaystationPresence()
+    pspresence = PlaystationPresence(locale.getdefaultlocale()[0])
 
     if args.no_tray_icon:
         pspresence.mainloop(notifier=None)
