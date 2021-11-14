@@ -127,5 +127,34 @@ class PSNClient():
         }
 
         url = f'{self._PS_GRAPH_API}?operationName=getPurchasedGameList&variables={json.dumps(variables)}&extensions={json.dumps(extensions)}'
+        print(url)
+        response = requests.get(url, headers=headers)
+        return json.loads(response.text)
+
+    def get_recent_games(self):
+        variables = {
+            "limit": 50,
+            "categories" : "ps4_game,ps5_native_game"
+        }
+
+        extensions = {
+            "persistedQuery": {
+                "version": 1,
+                "sha256Hash": "e780a6d8b921ef0c59ec01ea5c5255671272ca0d819edb61320914cf7a78b3ae"
+            }
+        }
+
+        headers = {
+            'accept': 'application/json',
+            'accept-language': 'en-US,en;q=0.9',
+            'authority': 'web.np.playstation.com',
+            'authorization': f'Bearer {self.get_access_token()}',
+            'content-type': 'application/json',
+            'origin': 'https://library.playstation.com',
+            'referer': 'https://library.playstation.com/',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.18 Safari/537.36 Edg/93.0.961.11'
+        }
+
+        url = f'{self._PS_GRAPH_API}?operationName=getUserGameList&variables={json.dumps(variables)}&extensions={json.dumps(extensions)}'
         response = requests.get(url, headers=headers)
         return json.loads(response.text)

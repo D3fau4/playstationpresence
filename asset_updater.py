@@ -28,7 +28,8 @@ def build_game_library(config):
     print("Retrieving game library...")
 
     client = PSNClient(config['npsso'], config['refresh_token'])
-    data = client.get_purchased_games()
+    #data = client.get_purchased_games()
+    data = client.get_recent_games()
 
     # These are the titles for which we will not be uploading icons
     # Note: this file may not exist
@@ -40,34 +41,51 @@ def build_game_library(config):
     # Some games may not appear as "purchased" because they are, e.g., pack-ins (like Astro's Playroom).
     # Initialize the library with these games to make sure they're included in the asset gathering process.
     library = {
-        "ps5": {
-            "ASTRO's PLAYROOM": {
-                "name": "ASTRO's PLAYROOM",
-                "titleId": "PPSA01325_00",
-                "image": "https://image.api.playstation.com/vulcan/ap/rnd/202010/2012/T3h5aafdjR8k7GJAG82832De.png"
-            }
-        },
+        "ps5": { },
         "ps4": { }
     }
 
-    for game in data['data']['purchasedTitlesRetrieve']['games']:
-        if game['titleId'] in ignored_titles:
-            continue
-
-        if game['platform'].lower() == "ps4":
-            # If we find a PS4 title we already saw on PS5, ignore the PS4 version
-            if game['name'] in library['ps5']:
+    try:
+        for game in data['data']['purchasedTitlesRetrieve']['games']:
+            if game['titleId'] in ignored_titles:
                 continue
-        elif game['platform'].lower() == "ps5":
-            # If we find a PS5 title we already saw on PS4, delete the PS4 record
-            if game['name'] in library['ps4']:
-                del(library['ps4'][game['name']])
 
-        library[game['platform'].lower()][game['name']] = {
-            'name': game['name'],
-            'titleId': game['titleId'],
-            'image': game['image']['url']
-        }
+            if game['platform'].lower() == "ps4":
+                # If we find a PS4 title we already saw on PS5, ignore the PS4 version
+                if game['name'] in library['ps5']:
+                    continue
+            elif game['platform'].lower() == "ps5":
+                # If we find a PS5 title we already saw on PS4, delete the PS4 record
+                if game['name'] in library['ps4']:
+                    del(library['ps4'][game['name']])
+
+            library[game['platform'].lower()][game['name']] = {
+                'name': game['name'],
+                'titleId': game['titleId'],
+                'image': game['image']['url']
+            }
+    except:
+        for game in data['data']['gameLibraryTitlesRetrieve']['games']:
+            if game['titleId'] in ignored_titles:
+                continue
+
+            if game['platform'].lower() == "ps4":
+                # If we find a PS4 title we already saw on PS5, ignore the PS4 version
+                if game['name'] in library['ps5']:
+                    continue
+            elif game['platform'].lower() == "ps5":
+                # If we find a PS5 title we already saw on PS4, delete the PS4 record
+                if game['name'] in library['ps4']:
+                    del(library['ps4'][game['name']])
+            else:
+                continue
+
+
+            library[game['platform'].lower()][game['name']] = {
+                'name': game['name'],
+                'titleId': game['titleId'],
+                'image': game['image']['url']
+            }
 
     print(f"Found {len(library['ps4']) + len(library['ps5'])} games in library")
     
